@@ -10459,6 +10459,11 @@ declare namespace Stripe {
             quantity?: number;
 
             /**
+             * The schedule attached to the subscription [Expandable]
+             */
+            schedule: string | subscriptionSchedules.ISubscriptionSchedule;
+
+            /**
              * Date of the last substantial change to this subscription. For example, a change to the items array,
              * or a change of status, will reset this timestamp.
              */
@@ -10961,6 +10966,354 @@ declare namespace Stripe {
              * The ID of the subscription whose items will be retrieved.
              */
             subscription: string;
+        }
+    }
+
+    namespace subscriptionSchedules {
+        /**
+         * A subscription schedule allows you to create and manage the lifecycle of a subscription by predefining expected changes.
+         */
+        interface ISubscriptionSchedule extends IResourceObject {
+          id: string;
+          object: 'subscription_schedule';
+
+          /**
+           * Time at which the subscription schedule was canceled. Measured in seconds since the Unix epoch.
+           */
+          canceled_at: number;
+
+          /**
+           * Time at which the subscription schedule was completed. Measured in seconds since the Unix epoch.
+           */
+          completed_at: number;
+
+          /**
+           * Time at which the object was created. Measured in seconds since the Unix epoch.
+           */
+          created: number;
+
+          /**
+           * Object representing the start and end dates for the current phase of the subscription schedule, if it is `active`.
+           */
+          current_phase: {
+            start_date: number;
+            end_date: number;
+          };
+
+          /**
+           * ID of the customer who owns the subscription schedule. [Expandable]
+           */
+          customer: string | customers.ICustomer;
+
+          /**
+           * Object representing the subscription schedule’s default settings.
+           */
+          default_settings: ISubscriptionScheduleDefaultSettings;
+
+          /**
+           * Behavior of the subscription schedule and underlying subscription when it ends.
+           */
+          end_behavior: string;
+
+          /**
+           * Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
+           */
+          livemode: boolean;
+
+          /**
+           * Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
+           */
+          metadata: IMetadata;
+
+          /**
+           * Configuration for the subscription schedule’s phases.
+           */
+          phases: ISubscriptionSchedulePhase[];
+
+          /**
+           * Time at which the subscription schedule was released. Measured in seconds since the Unix epoch.
+           */
+          released_at: number;
+
+          /**
+           * ID of the subscription once managed by the subscription schedule (if it is released).
+           */
+          released_subscription: string;
+
+          /**
+           * The present status of the subscription schedule. Possible values are `not_started`, `active`, `completed`, `released`, and `canceled`.
+           * You can read more about the different states in the [behavior guide](https://stripe.com/docs/billing/subscriptions/subscription-schedules).
+           */
+          status: 'not_started' | 'completed' | 'released' | 'canceled';
+
+          /**
+           * ID of the subscription managed by the subscription schedule. [Expandable]
+           */
+          subscription: string | subscriptions.ISubscription;
+        }
+
+        interface ISubscriptionSchedulePhase {
+            /**
+             * A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice subtotal that will be transferred to the application owner’s Stripe account during this phase of the schedule.
+             */
+            application_fee_percent: number;
+
+            /**
+             * Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period
+             */
+            billing_thresholds: IBillingThreshold[];
+
+            /**
+             * Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the
+             * underlying subscription at the end of each billing cycle using the default source attached to the customer.
+             * When sending an invoice, Stripe will email your customer an invoice with payment instructions.
+             */
+            collection_method: 'charge_automatically' | 'send_invoice';
+
+            /**
+             * ID of the coupon to use during this phase of the subscription schedule. [Expandable]
+             */
+            coupon: string | coupons.ICoupon;
+
+            /**
+             * ID of the default payment method for the subscription schedule. It must belong to the customer associated with the subscription schedule. If not set, invoices
+             * will use the default payment method in the customer’s invoice settings. [Expandable]
+             */
+            default_payment_method: string | paymentMethods.IPaymentMethod;
+
+            default_tax_rates: taxRates.ITaxRate[];
+
+            /**
+             * The start of this phase of the subscription schedule.
+             */
+            start_date: number;
+
+            /**
+             * The end of this phase of the subscription schedule.
+             */
+            end_date: number;
+
+            /**
+             * The subscription schedule’s default invoice settings.
+             */
+            invoice_settings: {
+                /**
+                 * Number of days within which a customer must pay invoices generated by this subscription schedule. This value will be null for subscription schedules where billing=charge_automatically.
+                 */
+                days_until_due: number;
+            };
+
+            plans: Array<{
+                /**
+                 * Define thresholds at which an invoice will be sent, and the related subscription advanced to a new billing period
+                 */
+                billing_thresholds: {
+                    /**
+                     * Usage threshold that triggers the subscription to create an invoice
+                     */
+                    usage_gte: number;
+
+                    /**
+                     * ID of the plan to which the customer should be subscribed. [Expandable]
+                     */
+                    plan: string | plans.IPlan;
+
+                    /**
+                     * Quantity of the plan to which the customer should be subscribed.
+                     */
+                    quantity: number;
+
+                    tax_rates: taxRates.ITaxRate;
+                };
+            }>;
+
+            /**
+             * When the trial ends within the phase.
+             */
+            trial_end: number;
+        }
+
+        interface IBillingThreshold {
+            /**
+             * Monetary threshold that triggers the subscription to create an invoice.
+             */
+            amount_gte: number;
+
+            /**
+             * Indicates if the billing_cycle_anchor should be reset when a threshold is reached. If true, billing_cycle_anchor
+             * will be updated to the date/time the threshold was last reached; otherwise, the value will remain unchanged.
+             * This value may not be true if the subscription contains items with plans that have aggregate_usage=last_ever.
+             */
+            reset_billing_cycle_anchor: boolean;
+        }
+
+        interface ISubscriptionScheduleDefaultSettings {
+          billing_thresholds: IBillingThreshold;
+
+          /**
+           * Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the
+           * underlying subscription at the end of each billing cycle using the default source attached to the customer.
+           * When sending an invoice, Stripe will email your customer an invoice with payment instructions.
+           */
+          collection_method: 'charge_automatically' | 'send_invoice';
+
+          /**
+           * ID of the default payment method for the subscription schedule. If not set, invoices will use the default payment
+           * method in the customer’s invoice settings. [Expandable]
+           */
+          default_payment_method: string | paymentMethods.IPaymentMethod;
+
+          /**
+           * The subscription schedule’s default invoice settings.
+           */
+          invoice_settings: {
+            /**
+             * Number of days within which a customer must pay invoices generated by this subscription schedule. This value will be null for subscription schedules where billing=charge_automatically.
+             */
+            days_until_due: number;
+          };
+        }
+
+        interface ISubscriptionScheduleCreationOptions {
+            /**
+             * The identifier of the customer to create the subscription schedule for.
+             */
+            customer?: string;
+
+            default_settings?: ISubscriptionScheduleDefaultSettings;
+
+            /**
+             * Configures how the subscription schedule behaves when it ends. Possible values are `release` or `cancel`
+             * with the default being `release`. `release` will end the subscription schedule and keep the underlying
+             * subscription running. `cancel` will end the subscription schedule and cancel the underlying subscription.
+             */
+            end_behavior?: 'release' | 'cancel';
+
+            from_subscription?: string;
+
+            metadata?: IMetadata;
+
+            phases?: ISubscriptionSchedulePhaseCreationOptions[];
+
+            /**
+             * When the subscription schedule starts. We recommend using now so that it starts the subscription immediately.
+             * You can also use a Unix timestamp to backdate the subscription so that it starts on a past date, or set a
+             * future date for the subscription to start on. When you backdate, the `billing_cycle_anchor` of the subscription
+             * is equivalent to the `start_date`.
+             */
+            start_date?: 'now' | number;
+        }
+
+        interface ISubscriptionSchedulePhaseCreationOptions {
+            /**
+             * List of configuration items, each with an attached plan, to apply during this phase of the subscription schedule.
+             */
+            plans: ISubscriptionSchedulePhasePlanCreationOptions[];
+
+            /**
+             * A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the
+             * subscription invoice subtotal that will be transferred to the application owner’s Stripe account. The request
+             * must be made by a platform account on a connected account in order to set an application fee percentage. For
+             * more information, see the application fees [documentation](https://stripe.com/docs/connect/subscriptions#collecting-fees-on-subscriptions).
+             */
+            application_fee_percent?: number;
+
+            /**
+             * Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period.
+             * When updating, pass an empty string to remove previously-defined thresholds.
+             */
+            billing_thresholds?: {
+                /**
+                 * Usage threshold that triggers the subscription to advance to a new billing period
+                 */
+                usage_gte?: number;
+
+                /**
+                 * Indicates if the `billing_cycle_anchor` should be reset when a threshold is reached. If true, `billing_cycle_anchor`
+                 * will be updated to the date/time the threshold was last reached; otherwise, the value will remain unchanged.
+                 */
+                reset_billing_cycle_anchor?: boolean;
+            };
+
+            /**
+             * Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay the
+             * underlying subscription at the end of each billing cycle using the default source attached to the customer.
+             * When sending an invoice, Stripe will email your customer an invoice with payment instructions.
+             */
+            collection_method?: 'charge_automatically' | 'send_invoice';
+
+            /**
+             * The identifier of the coupon to apply to this phase of the subscription schedule.
+             */
+            coupon?: string;
+
+            /**
+             * ID of the default payment method for the subscription schedule. It must belong to the customer associated with the
+             * subscription schedule. If not set, invoices will use the default payment method in the customer’s invoice settings.
+             */
+            default_payment_method?: string;
+
+            /**
+             * A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will set the Subscription’s
+             * `default_tax_rates`, which means they will be the Invoice’s `default_tax_rates` for any Invoices issued by
+             * the Subscription during this Phase. When updating, pass an empty string to remove previously-defined tax rates.
+             */
+            default_tax_rates?: string[];
+
+            /**
+             * The date at which this phase of the subscription schedule ends. If set, `iterations` must not be set.
+             */
+            end_date?: number;
+
+            /**
+             * All invoices will be billed using the specified settings.
+             */
+            invoice_settings?: {
+                days_until_due?: number;
+            };
+
+            /**
+             * Integer representing the multiplier applied to the plan interval. For example, `iterations=2` applied to a plan with
+             * `interval=month` and `interval_count=3` results in a phase of `duration 2 * 3 months = 6 months`. If set, `end_date`
+             * must not be set.
+             */
+            iterations?: number;
+
+            trial?: boolean;
+
+            /**
+             * Sets the phase to trialing from the start date to this date. Must be before the phase end date, can not be combined with `trial`
+             */
+            trial_end?: number;
+        }
+
+        interface ISubscriptionSchedulePhasePlanCreationOptions {
+            /**
+             * The plan ID to subscribe to.
+             */
+            plan: string;
+
+            /**
+             * Define thresholds at which an invoice will be sent, and the subscription advanced to a new billing period.
+             * When updating, pass an empty string to remove previously-defined thresholds.
+             */
+            billing_thresholds?: {
+                /**
+                 * Usage threshold that triggers the subscription to advance to a new billing period
+                 */
+                usage_gte: number;
+            };
+
+            /**
+             * Quantity for the given plan. Can be set only if the plan’s `usage_type` is `licensed` and not `metered`.
+             */
+            quantity?: number;
+
+            /**
+             * A list of [Tax Rate](https://stripe.com/docs/api/tax_rates) ids. These Tax Rates will override the `default_tax_rates`
+             * on the Subscription. When updating, pass an empty string to remove previously-defined tax rates.
+             */
+            tax_rates?: string[];
         }
     }
 
@@ -14294,6 +14647,24 @@ declare namespace Stripe {
                 data: subscriptions.ISubscriptionCreationOptions,
                 response?: IResponseFn<subscriptions.ISubscription>,
             ): Promise<subscriptions.ISubscription>;
+        }
+
+        class SubscriptionSchedules extends Object {
+            /**
+             * Creates a new subscription schedule object.
+             *
+             * @returns Returns a subscription schedule object if the call succeeded.
+             * @param options The options for the new subscription schedule
+             */
+            create(
+                data: subscriptionSchedules.ISubscriptionScheduleCreationOptions,
+                options: HeaderOptions,
+                response?: IResponseFn<subscriptionSchedules.ISubscriptionSchedule>,
+            ): Promise<subscriptionSchedules.ISubscriptionSchedule>;
+            create(
+                data: subscriptionSchedules.ISubscriptionScheduleCreationOptions,
+                response?: IResponseFn<subscriptionSchedules.ISubscriptionSchedule>,
+            ): Promise<subscriptionSchedules.ISubscriptionSchedule>;
         }
 
         class CustomerSubscriptions extends SubscriptionsBase {
