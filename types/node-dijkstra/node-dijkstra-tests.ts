@@ -1,12 +1,25 @@
-import Graph = require('node-dijkstra');
+import Graph from 'node-dijkstra';
 
-const graph = new Graph();
-const graph2 = new Graph([{A: {B: 1}}]);
+new Graph();
 
-graph
-    .addNode('A', {B: 1})
-    .removeNode('C');
+// Pre-populated graph
+new Graph({
+    A: { B: 1 },
+    B: { A: 1, C: 2, D: 4 }
+});
 
-graph2.path('A', 'B');
-graph.path('A', 'B', {cost: false, reverse: true});
-graph.path('A', 'B', {cost: true});
+// Passing a Map
+const g = new Map<string, Map<string, number>>();
+
+const a = new Map<string, number>();
+a.set('B', 1);
+
+const b = new Map<string, number>();
+b.set('A', 1);
+b.set('C', 2);
+b.set('D', 4);
+
+g.set('A', a);
+g.set('B', b);
+
+new Graph(g);

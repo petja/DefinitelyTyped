@@ -1,9 +1,13 @@
 // Type definitions for node-dijkstra 2.5
 // Project: https://github.com/albertorestifo/node-dijkstra
 // Definitions by: Jorge López <https://github.com/nokutu>
+//                 Petja Touru <https://github.com/petja>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 /// <reference types="node" />
+
+type Neighbors = Record<string, number> | Map<string, number>;
+type Nodes = Record<string, Neighbors> | Map<string, Neighbors>;
 
 declare class Graph {
     /**
@@ -49,7 +53,7 @@ declare class Graph {
      *
      * const route = new Graph(g)
      */
-    constructor(nodes?: any[]);
+    constructor(nodes?: Nodes);
 
     /**
      * Adds a node to the graph
@@ -74,7 +78,7 @@ declare class Graph {
      *
      * route.addNode('D', d)
      */
-    addNode(name: string, neighbors: any): Graph;
+    addNode(name: string, neighbors: Neighbors): Graph;
 
     /**
      * Removes a node and all of its references from the graph
@@ -135,14 +139,18 @@ declare class Graph {
      * //       cost: 4
      * //    }
      */
-    path(start: any, goal: any, options ?: PathOption): any;
+    path(start: string, goal: string, options?: {cost: true} & PathOption): {
+        path: string[],
+        cost: number
+    };
+    path(start: string, goal: string, options?: PathOption): string[];
 }
 
 interface PathOption {
-    trim ?: boolean;
-    reverse ?: boolean;
-    cost ?: boolean;
-    avoid ?: any[];
+    trim?: boolean;
+    reverse?: boolean;
+    cost?: boolean;
+    avoid?: string[];
 }
 
 export = Graph;
